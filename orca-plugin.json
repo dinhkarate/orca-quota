@@ -1,0 +1,101 @@
+{
+  "manifestVersion": 2,
+  "id": "agent-quota",
+  "name": "Agent Quota",
+  "version": "0.1.0",
+  "description": "Plan limits and credits for every agent on one screen: Claude, Codex, Grok, Copilot, OpenRouter, DeepSeek and each account in a 9router pool, with the one closest to running out in the status bar.",
+  "author": {
+    "name": "dinhkarate",
+    "url": "https://github.com/dinhkarate"
+  },
+  "license": "MIT",
+  "repository": "https://github.com/dinhkarate/orca-quota",
+  "engines": {
+    "orca": ">=1.4.248"
+  },
+  "execution": "trusted-worker",
+  "pluginApi": 1,
+  "main": "src/worker.ts",
+  "contributes": {
+    "panels": [
+      {
+        "id": "agent-quota",
+        "title": "Agent Quota",
+        "icon": "gauge",
+        "entry": "src/panel.tsx",
+        "ui": "components"
+      }
+    ],
+    "commands": [
+      {
+        "id": "quota.refresh",
+        "title": "Agent Quota: Refresh now"
+      },
+      {
+        "id": "quota.toggle",
+        "title": "Agent Quota: Toggle the right sidebar",
+        "action": "sidebar.right.toggle"
+      }
+    ],
+    "statusBarItems": [
+      {
+        "id": "quota",
+        "text": "Quota",
+        "icon": "gauge",
+        "tooltip": "Agent Quota: reading limits…",
+        "command": "quota.toggle"
+      }
+    ],
+    "settings": [
+      {
+        "key": "refreshMinutes",
+        "title": "Refresh every (minutes)",
+        "description": "How often every source is read again. Claude's usage endpoint rate-limits frequent reads.",
+        "type": "integer",
+        "default": 5,
+        "minimum": 2,
+        "maximum": 60
+      },
+      {
+        "key": "statusBarIgnore",
+        "title": "Leave out of the status bar",
+        "description": "Comma-separated providers the status bar skips, e.g. \"Antigravity, Qoder\". The panel still shows them.",
+        "type": "string",
+        "default": "",
+        "placeholder": "Antigravity, Qoder"
+      },
+      {
+        "key": "nineRouterUrl",
+        "title": "9router URL",
+        "description": "Leave empty to use the 9router pi or omp send requests to. Its CLI token goes in the panel's Keys section.",
+        "type": "string",
+        "default": "",
+        "placeholder": "https://9router.example.com"
+      },
+      {
+        "key": "readAgentConfigs",
+        "title": "Read keys and logins from pi and omp",
+        "description": "auth.json and models.json under ~/.pi/agent and ~/.omp/agent.",
+        "type": "boolean",
+        "default": true
+      },
+      { "key": "claude", "title": "Claude", "description": "Claude Code's login (macOS Keychain or ~/.claude/.credentials.json).", "type": "boolean", "default": true },
+      { "key": "codex", "title": "Codex", "description": "~/.codex/auth.json (or $CODEX_HOME).", "type": "boolean", "default": true },
+      { "key": "grok", "title": "Grok", "description": "~/.grok/auth.json.", "type": "boolean", "default": true },
+      { "key": "copilot", "title": "GitHub Copilot", "description": "The token `gh auth token` prints.", "type": "boolean", "default": true },
+      { "key": "openrouter", "title": "OpenRouter", "type": "boolean", "default": true },
+      { "key": "deepseek", "title": "DeepSeek", "type": "boolean", "default": true }
+    ]
+  },
+  "capabilities": [
+    {
+      "kind": "storage:own"
+    },
+    {
+      "kind": "settings:own"
+    },
+    {
+      "kind": "secrets:own"
+    }
+  ]
+}
