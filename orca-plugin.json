@@ -1,9 +1,9 @@
 {
   "manifestVersion": 2,
-  "id": "agent-quota",
-  "name": "Agent Quota",
-  "version": "0.1.0",
-  "description": "Plan limits and credits for every agent on one screen: Claude, Codex, Grok, Copilot, OpenRouter, DeepSeek and each account in a 9router pool, with the one closest to running out in the status bar.",
+  "id": "agent-usage",
+  "name": "Agent Usage",
+  "version": "0.2.0",
+  "description": "Tokens and cost for every coding agent on the machine (Claude Code, Codex, pi, omp, Grok, OpenCode, dsh, Antigravity), by day, agent, model and project, read from their own logs; plus plan limits and credits for each account.",
   "author": {
     "name": "dinhkarate",
     "url": "https://github.com/dinhkarate"
@@ -19,50 +19,57 @@
   "contributes": {
     "panels": [
       {
-        "id": "agent-quota",
-        "title": "Agent Quota",
-        "icon": "gauge",
+        "id": "agent-usage",
+        "title": "Agent Usage",
+        "icon": "bar-chart-3",
         "entry": "src/panel.tsx",
         "ui": "components"
       }
     ],
     "commands": [
       {
-        "id": "quota.refresh",
-        "title": "Agent Quota: Refresh now"
+        "id": "usage.refresh",
+        "title": "Agent Usage: Read new usage and quota now"
       },
       {
-        "id": "quota.toggle",
-        "title": "Agent Quota: Toggle the right sidebar",
+        "id": "usage.toggle",
+        "title": "Agent Usage: Toggle the right sidebar",
         "action": "sidebar.right.toggle"
       }
     ],
     "statusBarItems": [
       {
-        "id": "quota",
-        "text": "Quota",
-        "icon": "gauge",
-        "tooltip": "Agent Quota: reading limits…",
-        "command": "quota.toggle"
+        "id": "usage",
+        "text": "Usage",
+        "icon": "bar-chart-3",
+        "tooltip": "Agent Usage: reading logs…",
+        "command": "usage.toggle"
       }
     ],
     "settings": [
       {
         "key": "refreshMinutes",
-        "title": "Refresh every (minutes)",
-        "description": "How often every source is read again. Claude's usage endpoint rate-limits frequent reads.",
+        "title": "Read quota every (minutes)",
+        "description": "How often plan limits are read again. Claude's usage endpoint rate-limits frequent reads. Token usage is read every minute.",
         "type": "integer",
         "default": 5,
         "minimum": 2,
         "maximum": 60
       },
       {
+        "key": "fetchPrices",
+        "title": "Download model prices",
+        "description": "Fetch LiteLLM's public price table from GitHub once a day to price tokens the agents did not price themselves. Nothing about your usage is sent.",
+        "type": "boolean",
+        "default": true
+      },
+      {
         "key": "statusBarIgnore",
-        "title": "Leave out of the status bar",
-        "description": "Comma-separated providers the status bar skips, e.g. \"Antigravity, Qoder\". The panel still shows them.",
+        "title": "Quota providers the status bar skips",
+        "description": "Comma-separated, e.g. \"Copilot, Qoder\". The status bar adds a provider's quota only when it runs low; the panel still shows every one.",
         "type": "string",
         "default": "",
-        "placeholder": "Antigravity, Qoder"
+        "placeholder": "Copilot, Qoder"
       },
       {
         "key": "nineRouterUrl",
@@ -79,12 +86,46 @@
         "type": "boolean",
         "default": true
       },
-      { "key": "claude", "title": "Claude", "description": "Claude Code's login (macOS Keychain or ~/.claude/.credentials.json).", "type": "boolean", "default": true },
-      { "key": "codex", "title": "Codex", "description": "~/.codex/auth.json (or $CODEX_HOME).", "type": "boolean", "default": true },
-      { "key": "grok", "title": "Grok", "description": "~/.grok/auth.json.", "type": "boolean", "default": true },
-      { "key": "copilot", "title": "GitHub Copilot", "description": "The token `gh auth token` prints.", "type": "boolean", "default": true },
-      { "key": "openrouter", "title": "OpenRouter", "type": "boolean", "default": true },
-      { "key": "deepseek", "title": "DeepSeek", "type": "boolean", "default": true }
+      {
+        "key": "claude",
+        "title": "Claude",
+        "description": "Claude Code's login (macOS Keychain or ~/.claude/.credentials.json).",
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "key": "codex",
+        "title": "Codex",
+        "description": "~/.codex/auth.json (or $CODEX_HOME).",
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "key": "grok",
+        "title": "Grok",
+        "description": "~/.grok/auth.json.",
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "key": "copilot",
+        "title": "GitHub Copilot",
+        "description": "The token `gh auth token` prints.",
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "key": "openrouter",
+        "title": "OpenRouter",
+        "type": "boolean",
+        "default": true
+      },
+      {
+        "key": "deepseek",
+        "title": "DeepSeek",
+        "type": "boolean",
+        "default": true
+      }
     ]
   },
   "capabilities": [

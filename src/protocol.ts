@@ -34,6 +34,43 @@ export type QuotaSnapshot = {
   updatedAt: number
 }
 
+export type UsageRange = 'today' | '7d' | '30d' | 'all'
+
+export type UsageTotals = {
+  /** Input not served from cache. */
+  input: number
+  /** Output, reasoning included. */
+  output: number
+  cacheRead: number
+  cacheWrite: number
+  reasoning: number
+  /** Model responses. */
+  calls: number
+  /** input + output + cache read + cache write. */
+  tokens: number
+  /** USD: what the agent logged, else API list price. */
+  cost: number
+  /** Tokens of models with no logged cost and no list price; not in `cost`. */
+  unpriced: number
+}
+
+export type UsageRow = { key: string; label: string; tokens: number; cost: number; calls: number; unpriced: number }
+
+/** One bar: a day, or a month for `all`. */
+export type UsagePoint = { label: string; tokens: number; cost: number }
+
+export type UsageReport = {
+  range: UsageRange
+  totals: UsageTotals
+  agents: UsageRow[]
+  models: UsageRow[]
+  projects: UsageRow[]
+  series: UsagePoint[]
+  /** Set while logs are being read: files read so far and in all. */
+  scanning: { done: number; total: number } | null
+  updatedAt: number
+}
+
 /** Plugin secrets the Keys section writes and the worker reads. */
 export const SECRET_KEYS = {
   nineRouterToken: 'ninerouter.token',
@@ -45,8 +82,12 @@ declare module 'orca' {
   interface PluginRequests {
     /** The last snapshot; `refresh` fetches every source again first. */
     'quota.get': { input: { refresh?: boolean }; output: QuotaSnapshot | null }
+    /** Token usage over a range, from what the logs held at the last scan. */
+    'usage.get': { input: { range: UsageRange; refresh?: boolean }; output: UsageReport }
   }
   interface PluginPanelEvents {
     'quota.updated': QuotaSnapshot
+    /** New usage was read; panels ask again for their range. */
+    'usage.updated': { updatedAt: number }
   }
 }
